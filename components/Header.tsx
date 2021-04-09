@@ -1,85 +1,106 @@
-import { Button, Col, Input, Row, Space } from "antd";
 import { useRouter } from "next/router";
-
+import { useSession } from "next-auth/client";
 import {
-  BellOutlined,
-  HomeOutlined,
-  LoginOutlined,
-  NotificationOutlined,
-  PlusOutlined,
-  SearchOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import Text from "antd/lib/typography/Text";
-import Avatar from "antd/lib/avatar/avatar";
+  Avatar,
+  Box,
+  Button,
+  Header as BaseHeader,
+  Heading,
+  Menu,
+  ResponsiveContext,
+  Spinner,
+} from "grommet";
+import { IoMenuOutline, IoNotificationsOutline } from "react-icons/io5";
 import Link from "next/link";
+import React from "react";
+import { usePostContext } from "../context/PostContext";
 
-export default function Header() {
+type Props = {
+  width?: string;
+};
+
+export const Header: React.FC<Props> = ({ width = "900px" }) => {
+  const { openDialog } = usePostContext();
   const router = useRouter();
+  const [session, loading] = useSession();
 
   return (
-    <div
-      style={{
-        padding: "15px 0px 15px 0px",
-        backgroundColor: "white",
-        position: "fixed",
-        width: "100%",
-        top: 0,
-        zIndex: 9999,
-      }}
+    <BaseHeader
+      background="white"
+      pad="small"
+      elevation="xsmall"
+      style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 2 }}
     >
-      <Col span={16} offset={4}>
-        <Row justify="space-between" align="middle">
-          <Link href="/">
-            <a>
-              <Text strong style={{ margin: 0, fontSize: 16 }}>
-                Awsem
-              </Text>
-            </a>
-          </Link>
-          <div
-            style={{
-              width: 450,
-              backgroundColor: "white",
-              borderRadius: 20,
-              padding: "2px 6px",
-              border: "solid 1px #d9d9d9",
-              boxShadow: "0 2px 0 rgb(0 0 0 / 2%)",
-            }}
-          >
-            <Input
-              size="middle"
-              placeholder="Cari sesuatu"
-              bordered={false}
-              suffix={<SearchOutlined />}
-            />
-          </div>
-          <Space>
-            <Button
-              type="default"
-              shape="circle"
-              icon={<BellOutlined />}
-              onProgress={() => {}}
-            />
-            <Button
-              type="default"
-              shape="round"
-              icon={<PlusOutlined />}
-              onClick={() => router.push("/upload")}
-            >
-              Upload
-            </Button>
-            <Button type="primary" shape="round" icon={<LoginOutlined />}>
-              Login
-            </Button>
-            <Link href="/user">
-              <a>
-                <Avatar size={32} icon={<UserOutlined />} />
-              </a>
-            </Link>
-          </Space>
-        </Row>
-      </Col>
-    </div>
+      <Box
+        width={width}
+        margin="0px auto"
+        justify="between"
+        align="center"
+        direction="row-responsive"
+      >
+        <Link href="/">
+          <Heading as="a" level="4">
+            Awsem
+          </Heading>
+        </Link>
+        <ResponsiveContext.Consumer>
+          {(size) =>
+            size === "small" ? (
+              <Box justify="end">
+                <Menu
+                  a11yTitle="Navigation Menu"
+                  dropProps={{ align: { top: "bottom", right: "right" } }}
+                  icon={<IoMenuOutline />}
+                  items={[
+                    {
+                      label: (
+                        <Box pad="small">
+                          <IoNotificationsOutline />
+                        </Box>
+                      ),
+                      href: "https://v2.grommet.io/",
+                    },
+                    {
+                      label: <Box pad="small">Feedback</Box>,
+                      href: "https://github.com/grommet/grommet/issues",
+                    },
+                  ]}
+                />
+              </Box>
+            ) : (
+              <Box
+                justify="end"
+                align="center"
+                direction="row"
+                style={{ columnGap: 20 }}
+              >
+                {loading ? (
+                  <Spinner />
+                ) : !session ? (
+                  <Button
+                    label="Masuk"
+                    onClick={() => router.push("/auth/signin")}
+                  />
+                ) : (
+                  <>
+                    <IoNotificationsOutline />
+                    <Button
+                      label="Upload Video"
+                      size="small"
+                      onClick={openDialog}
+                    />
+                    <Avatar
+                      src={session.user.image}
+                      size="32px"
+                      onClick={() => router.push("/profile")}
+                    />
+                  </>
+                )}
+              </Box>
+            )
+          }
+        </ResponsiveContext.Consumer>
+      </Box>
+    </BaseHeader>
   );
-}
+};

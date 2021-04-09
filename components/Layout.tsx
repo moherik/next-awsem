@@ -1,17 +1,14 @@
-import { Col, Layout as Wrapper, Space } from "antd";
-import Header from "./Header";
+import { Box, Grid, Main } from "grommet";
+import React from "react";
+import { Header } from "./Header";
 
-export default function Layout({ children }) {
+export const Layout: React.FC<{}> = ({ children }) => {
   return (
-    <div style={{ backgroundColor: "#eceff1" }}>
-      <Header />
-      <Col
-        span={16}
-        offset={4}
-        style={{ marginTop: "50px", padding: "40px 0px" }}
-      >
+    <Box background="#f2f2f2">
+      <Header width="850px" />
+      <Main width="850px" margin="90px auto 20px auto" pad={{ bottom: "5px" }}>
         {children}
-      </Col>
-    </div>
+      </Main>
+    </Box>
   );
-}
+};
