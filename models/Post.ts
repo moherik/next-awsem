@@ -3,6 +3,7 @@ export type Post = {
   title: string;
   description: string;
   videoUrl: string;
+  thumbnailUrl: string;
   author: {
     name: string;
     email: string;
@@ -14,4 +15,9 @@ export type Post = {
   _count: {
     likes: string;
   };
+  likes: Like[];
+};
+
+type Like = {
+  id: number;
 };

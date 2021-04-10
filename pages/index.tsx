@@ -36,8 +36,11 @@ const Home: React.FC<Props> = ({ posts }) => {
         <title>Awsem Content</title>
       </Head>
 
-      <Box gap="medium">
-        {feed && feed.map((post) => <FeedItem post={post} />)}
+      <Box gap="medium" direction="row">
+        <Box width="33%">Sidebar</Box>
+        <Box flex gap="medium">
+          {feed && feed.map((post) => <FeedItem post={post} />)}
+        </Box>
       </Box>
     </Layout>
   );

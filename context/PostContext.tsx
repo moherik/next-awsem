@@ -1,25 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { Post } from "../models/Post";
 
-type PostContextState = {
-  feed: Post[];
-  initializeFeed: (feed: Post[]) => void;
-  addToFeed: (post: Post) => void;
-  open: boolean;
-  openDialog: () => void;
-  closeDialog: () => void;
-};
-
-const intialState: PostContextState = {
-  feed: [],
-  initializeFeed: () => {},
-  addToFeed: () => {},
-  open: false,
-  openDialog: () => {},
-  closeDialog: () => {},
-};
-
-const PostContext = createContext(intialState);
+const PostContext = createContext(null);
 
 export const PostContextProvider: React.FC<{}> = ({ children }) => {
   const [open, setOpen] = useState(false);
@@ -33,6 +15,12 @@ export const PostContextProvider: React.FC<{}> = ({ children }) => {
 
   const addToFeed = (post: Post) => {
     feed.unshift(post);
+  };
+
+  const toggleLike = (postId: number) => {
+    const selectFeed = feed.findIndex((x) => x.id == postId);
+    const likes = feed[selectFeed]._count.likes;
+    feed[selectFeed]._count.likes = (parseInt(likes) + 1).toString();
   };
 
   return (
