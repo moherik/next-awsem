@@ -17,6 +17,7 @@ model Post {
   description   String 
   videoUrl      String      @map("video_url")
   thumbnailUrl  String      @map("thumbnail_url")
+  status        PostStatus  @default(DRAFT)
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
   author        User        @relation(fields: [authorId], references: [id])
@@ -24,6 +25,11 @@ model Post {
   likes         Like[]
 
   @@map("posts")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISH
 }
 
 model User {

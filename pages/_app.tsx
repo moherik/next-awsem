@@ -1,22 +1,34 @@
 import { AppPropsType } from "next/dist/next-server/lib/utils";
 import { Provider } from "next-auth/client";
-import { Grommet } from "grommet";
-import { grommet } from "grommet/themes";
+import { Button, Grommet } from "grommet";
+import { grommet, ThemeType } from "grommet/themes";
+import { ContextWrapper } from "../context/ContextWrapper";
 
 import "../styles/app.css";
-import { UploadDialog } from "../components/UploadDialog";
-import { PostContextProvider } from "../context/PostContext";
+import { SideDialog } from "../components/SideDialog";
+import { ModalDialog } from "../components/ModalDialog";
+
+const theme: ThemeType = {
+  ...grommet,
+  global: {
+    colors: {
+      "accent-1": { dark: "tomato", light: "red" },
+      focus: undefined,
+    },
+  },
+};
 
 function MyApp({ Component, pageProps }: AppPropsType) {
   return (
-    <PostContextProvider>
-      <Provider session={pageProps.session}>
-        <Grommet theme={grommet}>
-          <UploadDialog />
+    <Provider session={pageProps.session}>
+      <Grommet theme={theme}>
+        <ContextWrapper>
+          <SideDialog />
+          <ModalDialog />
           <Component {...pageProps} />
-        </Grommet>
-      </Provider>
-    </PostContextProvider>
+        </ContextWrapper>
+      </Grommet>
+    </Provider>
   );
 }
 

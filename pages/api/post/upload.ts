@@ -18,10 +18,9 @@ type UploadRequest = {
 const upload = multer({
   storage: multer.diskStorage({
     destination: "./public/uploads",
-    filename: (req: any, file, cb) => {
-      const arrFilename = file.originalname.split(".");
+    filename: (req: any, _file, cb) => {
       const randNumber = Math.random().toString(36).substring(7);
-      const filename = `${randNumber}-${arrFilename[0]}.${arrFilename[1]}`;
+      const filename = `${randNumber}`;
       req.filename = filename;
       cb(null, filename);
     },
@@ -33,17 +32,14 @@ handler.use(upload.array("video"));
 handler.post<UploadRequest>(async (req, res) => {
   const { title, description } = req.body;
 
-  const thumbnailName = `thumb-${req.filename.split(".")[0]}.png`;
+  const thumbnailName = `thumb-${req.filename}.png`;
 
-  ffmpeg(`./public/uploads/${req.filename}`)
-    .screenshot({
-      count: 1,
-      timestamps: [0],
-      filename: thumbnailName,
-      folder: "./public/uploads/thumbs",
-    })
-    .on("error", (error) => console.error(error))
-    .on("end", () => console.log("END"));
+  ffmpeg(`./public/uploads/${req.filename}`).screenshot({
+    count: 1,
+    timestamps: [0],
+    filename: thumbnailName,
+    folder: "./public/uploads/thumbs",
+  });
 
   const session = await getSession({ req });
   const result = await prisma.post.create({

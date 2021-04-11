@@ -1,9 +1,10 @@
-import { Box, Grid } from "grommet";
+import { Box } from "grommet";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { FeedItem } from "../components/FeedItem";
 import { Layout } from "../components/Layout";
-import { usePostContext } from "../context/PostContext";
+import { Sidebar } from "../components/Sidebar";
+import { useAppContext } from "../context/AppContext";
 
 import prisma from "../lib/prisma";
 import { Post } from "../models/Post";
@@ -24,7 +25,7 @@ type Props = {
 };
 
 const Home: React.FC<Props> = ({ posts }) => {
-  const { initializeFeed, feed } = usePostContext();
+  const { initializeFeed, feed } = useAppContext();
 
   useEffect(() => {
     initializeFeed(posts);
@@ -37,8 +38,10 @@ const Home: React.FC<Props> = ({ posts }) => {
       </Head>
 
       <Box gap="medium" direction="row">
-        <Box width="33%">Sidebar</Box>
-        <Box flex gap="medium">
+        <Box flex>
+          <Sidebar />
+        </Box>
+        <Box width="580px" gap="medium">
           {feed && feed.map((post) => <FeedItem post={post} />)}
         </Box>
       </Box>

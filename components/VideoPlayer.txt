@@ -1,0 +1,52 @@
+import React from "react"
+
+export const VideoPlayer: React.FC<{play: boolean}> = ({play}) => {
+return       {!play ? (
+  <Stack anchor="bottom-right">
+    <Stack
+      anchor="center"
+      onMouseEnter={() => setHoverThumb(true)}
+      onMouseLeave={() => setHoverThumb(false)}
+      style={{ cursor: "pointer" }}
+      onClick={() => setPlay(true)}
+    >
+      <Image
+        src={`uploads/thumbs/${post.thumbnailUrl}`}
+        width="640px"
+        height="360px"
+        fit="contain"
+      />
+
+      {hoverThumb && (
+        <Box
+          background="#0000008f"
+          color="white"
+          margin="small"
+          round="xlarge"
+        >
+          <IoPlayCircleOutline size={65} />
+        </Box>
+      )}
+    </Stack>
+    <Box
+      background="black"
+      color="white"
+      margin="small"
+      pad={{ horizontal: "xsmall", vertical: "xxsmall" }}
+      round="xsmall"
+    >
+      <Text size="xsmall">{metadata.length}</Text>
+    </Box>
+  </Stack>
+) : (
+  <Video
+    controls="over"
+    height="360px"
+    fit="cover"
+    src={`uploads/${post.videoUrl}`}
+    autoPlay={play}
+    ref={videoPlayerRef}
+  />
+)}
+
+}

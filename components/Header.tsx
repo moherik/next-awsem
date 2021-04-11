@@ -13,16 +13,20 @@ import {
 import { IoMenuOutline, IoNotificationsOutline } from "react-icons/io5";
 import Link from "next/link";
 import React from "react";
-import { usePostContext } from "../context/PostContext";
+import { useModal } from "../context/ModalContext";
+import { UploadForm } from "./UploadForm";
 
 type Props = {
   width?: string;
 };
 
 export const Header: React.FC<Props> = ({ width = "900px" }) => {
-  const { openDialog } = usePostContext();
   const router = useRouter();
   const [session, loading] = useSession();
+  const { handleSideModal } = useModal();
+
+  const handleShowDialog = () =>
+    handleSideModal({ method: "open", child: <UploadForm /> });
 
   return (
     <BaseHeader
@@ -87,7 +91,7 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
                     <Button
                       label="Upload Video"
                       size="small"
-                      onClick={openDialog}
+                      onClick={handleShowDialog}
                     />
                     <Avatar
                       src={session.user.image}

@@ -6,18 +6,8 @@ export type Post = {
   thumbnailUrl: string;
   author: {
     name: string;
-    email: string;
     username: string;
     image: string;
-    bio: string;
   } | null;
   createdAt: Date;
-  _count: {
-    likes: string;
-  };
-  likes: Like[];
-};
-
-type Like = {
-  id: number;
 };
