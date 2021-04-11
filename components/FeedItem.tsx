@@ -1,29 +1,111 @@
 import axios from "axios";
 import { Avatar, Box, Button, Heading, Text } from "grommet";
-import React, { useRef, useState } from "react";
+import { useSession } from "next-auth/client";
+import { useRouter } from "next/router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   IoBookmarkOutline,
   IoGiftOutline,
+  IoHeart,
+  IoHeartOutline,
   IoPlayCircleOutline,
   IoShareSocialOutline,
-  IoThumbsDownOutline,
-  IoThumbsUpOutline,
 } from "react-icons/io5";
 import ReactPlayer from "react-player";
-import { Post } from "../models/Post";
-import { useOnScreen } from "./CustomHook";
+import { useModal } from "../context/ModalContext";
+import { Post } from "../pages";
 
 export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
+  const router = useRouter();
+  const [session, loading] = useSession();
   const [play, setPlay] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const videoPlayerRef = useRef();
-  const isPlay = useOnScreen(videoPlayerRef);
+
+  const { handleDialogModal } = useModal();
 
   const handleLike = async (postId: number) => {
-    await axios
-      .get(`/api/post/like/${postId}`)
-      .then((response) => console.log(response.data))
-      .catch((err) => console.error(err.response.data));
+    if (!session) {
+      return handleDialogModal({
+        method: "open",
+        child: {
+          title: "Login",
+          body: "Silahkan login untuk bisa berinteraksi",
+          button: (
+            <Button
+              label="Login"
+              onClick={() => {
+                handleDialogModal({ method: "close" });
+                router.push("/auth/signin");
+              }}
+            />
+          ),
+        },
+      });
+    }
+
+    if (!isLiked) {
+      setLikes(likes + 1);
+    } else {
+      if (likes > 0) setLikes(likes - 1);
+    }
+
+    setIsLiked(!isLiked);
+
+    await axios.get(`/api/post/${postId}/like`);
   };
+
+  const handleFollowUser = async (userId: number) => {
+    if (isFollowing) {
+      return handleDialogModal({
+        method: "open",
+        child: {
+          title: "Berhenti mengikuti?",
+          body: "Konfirmasi untuk berhenti mengikuti",
+          button: (
+            <Box direction="row" justify="between" width="100%">
+              <Button
+                plain
+                label="Batal"
+                onClick={() => {
+                  handleDialogModal({ method: "close" });
+                }}
+              />
+              <Button
+                label="Lanjutkan"
+                onClick={() => {
+                  performFollowUser(userId);
+                  setIsFollowing(!isFollowing);
+                  handleDialogModal({ method: "close" });
+                }}
+              />
+            </Box>
+          ),
+        },
+      });
+    }
+
+    setIsFollowing(!isFollowing);
+    performFollowUser(userId);
+  };
+
+  const performFollowUser = async (userId: number) => {
+    await axios.get(`/api/user/${userId}/follow`);
+  };
+
+  const handleCheckFollow = async (userId: number) => {
+    await axios
+      .get(`/api/user/${userId}/checkFollow`)
+      .then((response) => setIsFollowing(response.data.check));
+  };
+
+  useEffect(() => {
+    setLikes(post._count.likes);
+    handleCheckFollow(post.author.id);
+    if (session && post.likes.length > 0) setIsLiked(true);
+  }, [post, session]);
 
   return (
     <Box
@@ -33,7 +115,7 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
       border={{ color: "#e0e0e0" }}
       flex
     >
-      <Box direction="row-responsive" align="center" gap="small" pad="small">
+      <Box direction="row" align="center" gap="small" pad="small">
         <Avatar src={post.author.image} size="38px" />
         <Box>
           <Heading level="5" margin="none">
@@ -43,7 +125,15 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
             <Text size="small">@{post.author.username}</Text>
           )}
         </Box>
-        <Button label="Ikuti" size="small" margin={{ left: "auto" }} />
+        {session && post.author.email != session?.user.email && (
+          <Button
+            primary={isFollowing}
+            label={isFollowing ? "Mengikuti" : "Ikuti"}
+            size="small"
+            margin={{ left: "auto" }}
+            onClick={() => handleFollowUser(post.author.id)}
+          />
+        )}
       </Box>
 
       <Box pad={{ horizontal: "small", top: "0", bottom: "small" }}>
@@ -55,7 +145,7 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
         </Text>
       </Box>
 
-      <Box ref={videoPlayerRef} overflow="hidden">
+      <Box height="360px">
         <ReactPlayer
           url={`uploads/${post.videoUrl}`}
           playing={play}
@@ -73,30 +163,40 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
             </Box>
           }
           width="100%"
+          height="360px"
           onClickPreview={() => setPlay(true)}
+          ref={videoPlayerRef}
         />
       </Box>
 
-      <Box pad="small" direction="row-responsive" justify="start" gap="medium">
-        <Box align="center" gap="4px" onClick={() => handleLike(post.id)}>
-          <IoThumbsUpOutline size={24} />
-          <Text size="xsmall">0 Suka</Text>
+      <Box pad="small" direction="row" gap="medium">
+        <Box align="center" onClick={() => handleLike(post.id)}>
+          {isLiked ? (
+            <IoHeart size={24} color="red" />
+          ) : (
+            <IoHeartOutline size={24} />
+          )}
+          <Text size="xsmall" weight="bold">
+            {likes} Suka
+          </Text>
         </Box>
-        <Box align="center" gap="4px" onClick={() => handleLike(post.id)}>
-          <IoThumbsDownOutline size={24} />
-          <Text size="xsmall">0 Tidak Suka</Text>
-        </Box>
-        <Box align="center" gap="4px">
+        <Box align="center">
           <IoGiftOutline size={24} />
-          <Text size="xsmall">Support</Text>
+          <Text size="xsmall" weight="bold">
+            Support
+          </Text>
         </Box>
-        <Box align="center" gap="4px">
+        <Box align="center">
           <IoShareSocialOutline size={24} />
-          <Text size="xsmall">Bagikan</Text>
+          <Text size="xsmall" weight="bold">
+            Bagikan
+          </Text>
         </Box>
-        <Box align="center" gap="4px" margin={{ start: "auto" }}>
+        <Box align="center" margin={{ start: "auto" }}>
           <IoBookmarkOutline size={24} />
-          <Text size="xsmall">Simpan</Text>
+          <Text size="xsmall" weight="bold">
+            Simpan
+          </Text>
         </Box>
       </Box>
     </Box>

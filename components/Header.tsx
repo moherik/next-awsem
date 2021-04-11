@@ -43,7 +43,7 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
         direction="row-responsive"
       >
         <Link href="/">
-          <Heading as="a" level="4">
+          <Heading as="a" level="4" style={{ cursor: "pointer" }}>
             Awsem
           </Heading>
         </Link>
@@ -96,7 +96,7 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
                     <Avatar
                       src={session.user.image}
                       size="32px"
-                      onClick={() => router.push("/profile")}
+                      onClick={() => router.push("/user")}
                     />
                   </>
                 )}

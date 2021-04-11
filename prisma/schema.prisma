@@ -44,6 +44,8 @@ model User {
   updatedAt     DateTime      @updatedAt @map("updated_at")
   posts         Post[]
   likes         Like[]
+  following     User[]        @relation("following")
+  follower      User[]        @relation("following")
 
   @@map("users")
 }

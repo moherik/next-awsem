@@ -1,7 +1,7 @@
+import { Box, Button } from "grommet";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getProviders, signIn } from "next-auth/client";
 import { Providers } from "next-auth/providers";
-import { Button, Container, Segment } from "semantic-ui-react";
 import { Layout } from "../../components/Layout";
 
 export const getServerSideProps = async (
@@ -16,15 +16,15 @@ export default function SignIn({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <Layout>
-      <Container>
+      <Box>
         {Object.values(providers).map((provider) => (
-          <Segment key={provider.name}>
+          <Box key={provider.name}>
             <Button onClick={() => signIn(provider.id, { callbackUrl: "/" })}>
               Login dengan {provider.name}
             </Button>
-          </Segment>
+          </Box>
         ))}
-      </Container>
+      </Box>
     </Layout>
   );
 }

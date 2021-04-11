@@ -13,7 +13,7 @@ import {
 import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useModal, DialogChildContent } from "../context/ModalContext";
-import { Post } from "../models/Post";
+import { Post } from "../pages";
 
 export const UploadForm: React.FC<{}> = () => {
   const defaultFormValue = {
@@ -22,7 +22,6 @@ export const UploadForm: React.FC<{}> = () => {
     description: "",
   };
 
-  const { addToFeed } = useAppContext();
   const { handleDialogModal } = useModal();
 
   const [formValue, setFormValue] = useState(defaultFormValue);
@@ -54,10 +53,7 @@ export const UploadForm: React.FC<{}> = () => {
       .post("/api/post/upload", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      .then((response) => {
-        const newFeed: Post = response.data;
-        newFeed.createdAt = new Date(newFeed.createdAt);
-        addToFeed(response.data);
+      .then((_response) => {
         showDialog({ title: "Sukses", body: "Berhasil mengunggah video" });
         resetFormData();
       })

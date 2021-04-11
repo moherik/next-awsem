@@ -1,10 +1,5 @@
-import { Anchor, Box, Button, Heading, List, Nav, Text } from "grommet";
-import { Home, User } from "grommet-icons";
-import {
-  IoCompassOutline,
-  IoHomeOutline,
-  IoPeopleOutline,
-} from "react-icons/io5";
+import { Box, Button, Heading, Nav, Text } from "grommet";
+import { IoHomeOutline, IoPeopleOutline } from "react-icons/io5";
 
 const NavItem = ({ icon, label, ...rest }) => (
   <Button plain {...rest}>
@@ -27,8 +22,8 @@ export const Sidebar: React.FC<{}> = () => {
   return (
     <Box style={{ position: "sticky", top: 0 }}>
       <Nav gap="xxsmall" responsive={true}>
-        <NavItem icon={<Home />} label="Beranda" />
-        <NavItem icon={<User />} label="Mengikuti" />
+        <NavItem icon={<IoHomeOutline size={24} />} label="Beranda" />
+        <NavItem icon={<IoPeopleOutline size={24} />} label="Mengikuti" />
         <Heading level="5" margin={{ horizontal: "small", vertical: "small" }}>
           Topik
         </Heading>
