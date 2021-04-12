@@ -30,24 +30,7 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
   const { handleDialogModal } = useModal();
 
   const handleLike = async (postId: number) => {
-    if (!session) {
-      return handleDialogModal({
-        method: "open",
-        child: {
-          title: "Login",
-          body: "Silahkan login untuk bisa berinteraksi",
-          button: (
-            <Button
-              label="Login"
-              onClick={() => {
-                handleDialogModal({ method: "close" });
-                router.push("/auth/signin");
-              }}
-            />
-          ),
-        },
-      });
-    }
+    if (!session) return loginPrompt();
 
     if (!isLiked) {
       setLikes(likes + 1);
@@ -57,10 +40,35 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
 
     setIsLiked(!isLiked);
 
-    await axios.get(`/api/post/${postId}/like`);
+    await axios
+      .get(`/api/post/${postId}/like`)
+      .catch((err) => console.error(err));
+  };
+
+  const loginPrompt = () => {
+    return handleDialogModal({
+      method: "open",
+      child: {
+        title: "Login",
+        body: "Silahkan login untuk bisa berinteraksi",
+        button: (
+          <Button
+            label="Login"
+            onClick={() => {
+              handleDialogModal({ method: "close" });
+              router.push("/auth/signin");
+            }}
+          />
+        ),
+      },
+    });
   };
 
   const handleBookmarkPost = async (postId: number) => {
+    if (!session) {
+      return loginPrompt();
+    }
+
     setIsBookmark(!isBookmark);
 
     await axios
@@ -132,7 +140,11 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
     >
       <Box direction="row" align="center" gap="small" pad="small">
         <Avatar src={post.author.image} size="38px" />
-        <Box>
+        <Box
+          onClick={() =>
+            router.push(`/user?u=${post.author.username || post.author.id}`)
+          }
+        >
           <Heading level="5" margin="none">
             {post.author.name}
           </Heading>

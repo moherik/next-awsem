@@ -1,21 +1,25 @@
 import {
   Avatar,
   Box,
-  Card,
+  Button,
   Grid,
   Heading,
-  Image,
   ResponsiveContext,
   Stack,
   Text,
 } from "grommet";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/client";
+import { getSession, useSession } from "next-auth/client";
 import Head from "next/head";
-import { useContext, useRef, useState } from "react";
-import { IoPlayCircleOutline } from "react-icons/io5";
+import { useRouter } from "next/router";
+import { useContext, useEffect, useState } from "react";
+import { IoCreateOutline } from "react-icons/io5";
 import { Layout } from "../../components/Layout";
+import { MyVideoItem } from "../../components/MyVideoItem";
+import { UpdateProfileForm } from "../../components/UpdateProfileForm";
+import { useModal } from "../../context/ModalContext";
 import prisma from "../../lib/prisma";
+import Error from "next/error";
 
 export interface Profile {
   id: number;
@@ -37,54 +41,146 @@ export interface MyPost {
   createdAt: Date;
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const session = await getSession({ req });
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+  res,
+}) => {
+  const { u: userId } = query;
+  let userEmail: string;
+  let error: boolean = false;
+
+  if (userId == null) {
+    const session = await getSession({ req });
+    userEmail = session?.user.email;
+  } else {
+    let getUser: any = null;
+
+    if (!isNaN(Number(userId))) {
+      getUser = await prisma.user.findFirst({
+        where: { id: Number(userId || -1) },
+        select: { email: true },
+      });
+    } else {
+      getUser = await prisma.user.findFirst({
+        where: { username: String(userId || "") },
+        select: { email: true },
+      });
+    }
+
+    if (getUser == null) {
+      error = true;
+      res.statusCode = 404;
+      return { props: { error } };
+    }
+
+    userEmail = getUser.email;
+  }
+
   const user = await prisma.user.findUnique({
-    where: { email: session?.user.email },
+    where: { email: userEmail },
     include: { following: true, follower: true },
   });
   const posts = await prisma.post.findMany({ where: { authorId: user.id } });
-  return { props: { user, posts } };
+  return { props: { error, user, posts } };
 };
 
 type Props = {
+  error: boolean;
   user: Profile;
   posts: MyPost[];
 };
 
-const Profile: React.FC<Props> = ({ user, posts }) => {
+type Counter = {
+  count: number | string;
+  title: string;
+  onClick?: () => void;
+};
+
+const Profile: React.FC<Props> = ({ error, user, posts }) => {
+  if (error) return <Error statusCode={404} />;
+
+  const { handleSideModal } = useModal();
   const size = useContext(ResponsiveContext);
-  const playBtn = useRef();
+  const [counter, setCounter] = useState<Counter[]>([]);
+  const router = useRouter();
+  const [session] = useSession();
+
+  const refreshData = () => router.replace(router.asPath);
+
+  const handleShowEditDialog = () => {
+    if (session.user.email == user.email) {
+      handleSideModal({
+        method: "open",
+        child: {
+          title: "Edit Profil",
+          body: <UpdateProfileForm user={user} onComplete={refreshData} />,
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    const count: Counter[] = [
+      { title: "Video", count: posts.length },
+      { title: "Dukungan", count: "Rp. 0" },
+      { title: "Mengikuti", count: user.following.length },
+      { title: "Pengikut", count: user.follower.length },
+    ];
+    setCounter(count);
+  }, [user]);
 
   return (
     <Layout>
       <Head>
         <title>
-          {user.name} {user.username && `@${user.username}`}
+          {user.name} {user.username && `- @${user.username}`}
         </title>
       </Head>
 
       <Box gap="large">
-        <Box align="center">
-          <Avatar src={user.image} size="large" />
-          <Heading level="4" margin={{ vertical: "small" }}>
-            {user.name}
-          </Heading>
-          <Text>{user.username}</Text>
-          <Box direction="row" gap="medium">
-            <Heading level="5" margin="0px">
-              {user.following.length} Mengikuti
-            </Heading>
-            <Heading level="5" margin="0px">
-              {user.follower.length} Pengikut
-            </Heading>
+        <Stack anchor="top-right">
+          <Box align="center" gap="small">
+            <Avatar src={user.image} size="xlarge" />
+            <Box align="center">
+              {user.username && <Text>@{user.username}</Text>}
+              <Heading level="4" margin="0px">
+                {user.name}
+              </Heading>
+              {user.bio && <Text margin={{ top: "small" }}>{user.bio}</Text>}
+            </Box>
+            <Box
+              direction="row"
+              gap="medium"
+              border="all"
+              pad="small"
+              round="xsmall"
+              margin={{ top: "small" }}
+            >
+              {counter.map((item, index) => (
+                <Badge count={item.count} title={item.title} key={index} />
+              ))}
+            </Box>
           </Box>
-        </Box>
+
+          {session.user.email == user.email && (
+            <Button plain onClick={handleShowEditDialog}>
+              {({ hover }) => (
+                <Box direction="row" gap="xsmall" onClick={() => {}}>
+                  <IoCreateOutline color={hover ? "tomato" : undefined} />
+                  <Text size="small" color={hover ? "tomato" : undefined}>
+                    Edit Profil
+                  </Text>
+                </Box>
+              )}
+            </Button>
+          )}
+        </Stack>
 
         <Box>
           <Grid columns={size !== "small" ? "medium" : "100%"} gap="medium">
             {posts.map((post) => (
-              <Item post={post} key={post.id} />
+              <MyVideoItem post={post} key={post.id} />
             ))}
           </Grid>
         </Box>
@@ -93,39 +189,14 @@ const Profile: React.FC<Props> = ({ user, posts }) => {
   );
 };
 
-const Item: React.FC<{ post: MyPost }> = ({ post }) => {
-  const [hover, setHover] = useState(false);
-
+const Badge: React.FC<Counter> = ({ count, title }) => {
   return (
-    <Card elevation="xsmall" round="xsmall" border={{ color: "#e0e0e0" }}>
-      <Box
-        onClick={() => {}}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
-        <Stack anchor="center">
-          <Image src={`uploads/thumbs/${post.thumbnailUrl}`} width="100%" />
-          {hover && (
-            <Box
-              background="#0000008f"
-              color="white"
-              margin="small"
-              round="xlarge"
-            >
-              <IoPlayCircleOutline size={65} />
-            </Box>
-          )}
-        </Stack>
-      </Box>
-      <Box pad="small">
-        <Heading level="5" margin="0">
-          {post.title}
-        </Heading>
-        <Text size="xsmall">
-          Diupload pada {post.createdAt.toLocaleDateString()}
-        </Text>
-      </Box>
-    </Card>
+    <Box direction="column" align="center" width="70px">
+      <Heading level="4" margin="0px">
+        {count}
+      </Heading>
+      <Text size="small">{title}</Text>
+    </Box>
   );
 };
 

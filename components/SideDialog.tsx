@@ -3,7 +3,7 @@ import { Close } from "grommet-icons";
 import React from "react";
 import { useModal } from "../context/ModalContext";
 
-export const SideDialog: React.FC<{}> = () => {
+export const SideDialog = () => {
   const { isSideOpen, sideChild, handleSideModal } = useModal();
 
   const onClose = () => handleSideModal({ method: "close" });
@@ -20,15 +20,15 @@ export const SideDialog: React.FC<{}> = () => {
         <Box fill="vertical" overflow="auto" width="medium" pad="medium">
           <Box flex={false} direction="row" justify="between">
             <Heading level={2} margin="none">
-              Upload Video
+              {sideChild.title}
             </Heading>
             <Button icon={<Close />} onClick={onClose} />
           </Box>
-          {sideChild}
+          {sideChild.body}
         </Box>
       </Layer>
     );
   }
 
-  return <></>;
+  return null;
 };

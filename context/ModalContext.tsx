@@ -2,7 +2,10 @@ import React, { createContext, useContext, useState } from "react";
 
 interface ContextValue {
   isSideOpen: boolean;
-  sideChild: React.ReactNode;
+  sideChild: {
+    title: string;
+    body: React.ReactNode;
+  };
   handleSideModal: ({}: HandleSideParams) => void;
   isDialogOpen: boolean;
   dialogChild: DialogChildContent;
@@ -11,7 +14,10 @@ interface ContextValue {
 
 interface HandleSideParams {
   method: "open" | "close";
-  child?: React.ReactNode;
+  child?: {
+    title: string;
+    body: React.ReactNode;
+  };
 }
 
 interface HandleDialogParams {
@@ -29,7 +35,10 @@ const ModalContext = createContext<ContextValue>(null);
 
 export const ModalContextProvider: React.FC<{}> = ({ children }) => {
   const [isSideOpen, setIsSideOpen] = useState(false);
-  const [sideChild, setSideChild] = useState<React.ReactNode>();
+  const [sideChild, setSideChild] = useState<{
+    title: string;
+    body: React.ReactNode;
+  }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogChild, setDialogChild] = useState<DialogChildContent>();
 

@@ -26,7 +26,10 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
   const { handleSideModal } = useModal();
 
   const handleShowDialog = () =>
-    handleSideModal({ method: "open", child: <UploadForm /> });
+    handleSideModal({
+      method: "open",
+      child: { title: "Upload Video", body: <UploadForm /> },
+    });
 
   return (
     <BaseHeader
@@ -59,7 +62,7 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
                     {
                       label: (
                         <Box pad="small">
-                          <IoNotificationsOutline />
+                          <IoNotificationsOutline size={24} />
                         </Box>
                       ),
                       href: "https://v2.grommet.io/",
@@ -87,7 +90,7 @@ export const Header: React.FC<Props> = ({ width = "900px" }) => {
                   />
                 ) : (
                   <>
-                    <IoNotificationsOutline />
+                    <IoNotificationsOutline size={24} />
                     <Button
                       label="Upload Video"
                       size="small"
