@@ -11,9 +11,7 @@ import {
   Video,
 } from "grommet";
 import React, { useState } from "react";
-import { useAppContext } from "../context/AppContext";
 import { useModal, DialogChildContent } from "../context/ModalContext";
-import { Post } from "../pages";
 
 export const UploadForm: React.FC<{}> = () => {
   const defaultFormValue = {

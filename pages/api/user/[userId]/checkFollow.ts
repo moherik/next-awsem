@@ -18,6 +18,7 @@ handler.get(async (req, res) => {
   if (user.following.length > 0) {
     isExist = true;
   }
+
   res.status(200).json({ check: isExist });
 });
 

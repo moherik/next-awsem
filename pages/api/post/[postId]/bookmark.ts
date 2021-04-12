@@ -6,22 +6,23 @@ import prisma from "../../../../lib/prisma";
 const handler = nc<NextApiRequest, NextApiResponse>();
 
 handler.get(async (req, res) => {
-  const { userId: followUserId } = req.query;
+  const { postId } = req.query;
+
   const session = await getSession({ req });
   const user = await prisma.user.findFirst({
     where: { email: session?.user.email },
-    include: { following: { where: { id: Number(followUserId) } } },
+    include: { bookmark: { where: { id: Number(postId) } } },
   });
 
-  if (user.following.length > 0) {
+  if (user.bookmark.length > 0) {
     await prisma.user.update({
       where: { email: session.user.email },
-      data: { following: { disconnect: { id: Number(followUserId) } } },
+      data: { bookmark: { disconnect: { id: Number(postId) } } },
     });
   } else {
     await prisma.user.update({
       where: { email: session.user.email },
-      data: { following: { connect: { id: Number(followUserId) } } },
+      data: { bookmark: { connect: { id: Number(postId) } } },
     });
   }
 

@@ -9,23 +9,26 @@ handler.get(async (req, res) => {
   const { postId } = req.query;
 
   const session = await getSession({ req });
+  const email = session?.user.email;
+
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email },
+    include: { like: { where: { id: Number(postId) } } },
   });
 
-  const like = await prisma.like.findFirst({
-    where: { userId: user.id, postId: Number(postId) },
-  });
-
-  if (like != null) {
-    await prisma.like.delete({ where: { id: like.id } });
+  if (user.like.length > 0) {
+    await prisma.user.update({
+      where: { email },
+      data: { like: { disconnect: { id: Number(postId) } } },
+    });
   } else {
-    await prisma.like.create({
-      data: { postId: Number(postId), userId: user.id },
+    await prisma.user.update({
+      where: { email },
+      data: { like: { connect: { id: Number(postId) } } },
     });
   }
 
-  res.status(200).json({ data: "Added" });
+  res.status(200).json("OK");
 });
 
 export default handler;

@@ -4,9 +4,10 @@ import { Button, Grommet } from "grommet";
 import { grommet, ThemeType } from "grommet/themes";
 import { ContextWrapper } from "../context/ContextWrapper";
 
-import "../styles/app.css";
 import { SideDialog } from "../components/SideDialog";
 import { ModalDialog } from "../components/ModalDialog";
+
+import "../styles/app.css";
 
 const theme: ThemeType = {
   ...grommet,

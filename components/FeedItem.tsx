@@ -1,14 +1,16 @@
 import axios from "axios";
-import { Avatar, Box, Button, Heading, Text } from "grommet";
+import { Avatar, Box, Button, Card, Heading, Text } from "grommet";
 import { useSession } from "next-auth/client";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  IoBookmark,
   IoBookmarkOutline,
   IoGiftOutline,
   IoHeart,
   IoHeartOutline,
   IoPlayCircleOutline,
+  IoShareOutline,
   IoShareSocialOutline,
 } from "react-icons/io5";
 import ReactPlayer from "react-player";
@@ -22,6 +24,7 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isBookmark, setIsBookmark] = useState(false);
   const videoPlayerRef = useRef();
 
   const { handleDialogModal } = useModal();
@@ -55,6 +58,14 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
     setIsLiked(!isLiked);
 
     await axios.get(`/api/post/${postId}/like`);
+  };
+
+  const handleBookmarkPost = async (postId: number) => {
+    setIsBookmark(!isBookmark);
+
+    await axios
+      .get(`/api/post/${postId}/bookmark`)
+      .catch((error) => console.error(error.response.data));
   };
 
   const handleFollowUser = async (userId: number) => {
@@ -104,12 +115,16 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
   useEffect(() => {
     setLikes(post._count.likes);
     handleCheckFollow(post.author.id);
-    if (session && post.likes.length > 0) setIsLiked(true);
+
+    if (session) {
+      if (post.bookmarks.length > 0) setIsBookmark(true);
+      if (post.likes.length > 0) setIsLiked(true);
+    }
   }, [post, session]);
 
   return (
-    <Box
-      background="white"
+    <Card
+      elevation="xsmall"
       round="xsmall"
       overflow="hidden"
       border={{ color: "#e0e0e0" }}
@@ -169,7 +184,7 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
         />
       </Box>
 
-      <Box pad="small" direction="row" gap="medium">
+      <Box pad="small" direction="row" align="center" gap="medium">
         <Box align="center" onClick={() => handleLike(post.id)}>
           {isLiked ? (
             <IoHeart size={24} color="red" />
@@ -180,25 +195,29 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
             {likes} Suka
           </Text>
         </Box>
-        <Box align="center">
-          <IoGiftOutline size={24} />
-          <Text size="xsmall" weight="bold">
-            Support
-          </Text>
-        </Box>
-        <Box align="center">
-          <IoShareSocialOutline size={24} />
+        <Box align="center" onClick={() => {}}>
+          <IoShareOutline size={24} />
           <Text size="xsmall" weight="bold">
             Bagikan
           </Text>
         </Box>
-        <Box align="center" margin={{ start: "auto" }}>
-          <IoBookmarkOutline size={24} />
+        <Box align="center" onClick={() => handleBookmarkPost(post.id)}>
+          {isBookmark ? (
+            <IoBookmark size={24} color="selected" />
+          ) : (
+            <IoBookmarkOutline size={24} />
+          )}
           <Text size="xsmall" weight="bold">
             Simpan
           </Text>
         </Box>
+        <Box align="center" margin={{ start: "auto" }} onClick={() => {}}>
+          <IoGiftOutline size={24} />
+          <Text size="xsmall" weight="bold">
+            Dukungan
+          </Text>
+        </Box>
       </Box>
-    </Box>
+    </Card>
   );
 };

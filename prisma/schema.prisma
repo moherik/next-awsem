@@ -22,7 +22,8 @@ model Post {
   updatedAt     DateTime    @updatedAt @map("updated_at")
   author        User        @relation(fields: [authorId], references: [id])
   authorId      Int         @map("author_id")
-  likes         Like[]
+  likes         User[]      @relation("like")
+  bookmarks     User[]      @relation("bookmark")
 
   @@map("posts")
 }
@@ -43,21 +44,12 @@ model User {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   posts         Post[]
-  likes         Like[]
   following     User[]        @relation("following")
   follower      User[]        @relation("following")
+  bookmark      Post[]        @relation("bookmark")
+  like          Post[]         @relation("like")
 
   @@map("users")
-}
-
-model Like {
-  id            Int           @default(autoincrement()) @id
-  user          User          @relation(fields: [userId], references: [id])
-  userId        Int           @map("user_id")
-  post          Post          @relation(fields: [postId], references: [id])
-  postId        Int           @map("post_id")
-
-  @@map("likes")
 }
 
 model Account {
