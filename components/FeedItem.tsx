@@ -139,18 +139,23 @@ export const FeedItem: React.FC<{ post: Post }> = ({ post }) => {
       flex
     >
       <Box direction="row" align="center" gap="small" pad="small">
-        <Avatar src={post.author.image} size="38px" />
         <Box
+          direction="row"
+          gap="small"
+          align="center"
           onClick={() =>
             router.push(`/user?u=${post.author.username || post.author.id}`)
           }
         >
-          <Heading level="5" margin="none">
-            {post.author.name}
-          </Heading>
-          {post.author.username && (
-            <Text size="small">@{post.author.username}</Text>
-          )}
+          <Avatar src={post.author.image} size="38px" />
+          <Box>
+            <Heading level="5" margin="none">
+              {post.author.name}
+            </Heading>
+            {post.author.username && (
+              <Text size="small">@{post.author.username}</Text>
+            )}
+          </Box>
         </Box>
         {session && post.author.email != session?.user.email && (
           <Button

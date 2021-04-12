@@ -1,5 +1,5 @@
-import { createContext, ReactChildren, useContext, useState } from "react";
-import { Post } from "../models/Post";
+import { createContext, useContext, useState } from "react";
+import { Post } from "../pages";
 
 interface ContextValue {
   feed: Post[];
